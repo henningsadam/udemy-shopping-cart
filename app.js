@@ -3,18 +3,15 @@
 const path = require('path');
 
 const express = require('express');
-const expressHandleBars = require('express-handlebars');
 
 const adminData = require('./routes/admin');
 const shopRoutes = require('./routes/shop');
 
 const app = express();
 
-app.engine('handlebars', expressHandleBars({layoutsDir: 'views/layouts/', defaultLayout: 'main-layout'}))
-
 // The below configures the templating engine for the app, as well as defines the location to the views the templating engine will use
 // See app.set() in the Express.js docs for more (https://expressjs.com/en/api.html#app.set)
-app.set('view engine', 'handlebars') // this sets the template engine for the app to whatever your preference is here
+app.set('view engine', 'ejs') // this sets the template engine for the app to whatever your preference is here
 app.set('views', 'views') // this tells express where to find the views to be used by templating engine
 
 app.use(express.static(path.join(__dirname, 'public')))
