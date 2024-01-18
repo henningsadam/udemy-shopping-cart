@@ -13,7 +13,7 @@ router.use(bodyParser.urlencoded({ extended: false }));
 
 router.get('/add-product', (req, res, next) => {
   // res.sendFile(path.join(rootDir, 'views', 'add-product.html')); // code used without rendering engine
-  res.render('add-product', {docTitle: 'Add Product'})
+  res.render('add-product', {docTitle: 'Add Product', path: '/admin/add-product'})
 });
 
 router.post('/add-product', (req, res, next) => {
