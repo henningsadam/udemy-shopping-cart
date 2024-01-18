@@ -10,7 +10,7 @@ const shopRoutes = require('./routes/shop');
 
 const app = express();
 
-app.engine('handlebars', expressHandleBars())
+app.engine('handlebars', expressHandleBars({layoutsDir: 'views/layouts/', defaultLayout: 'main-layout'}))
 
 // The below configures the templating engine for the app, as well as defines the location to the views the templating engine will use
 // See app.set() in the Express.js docs for more (https://expressjs.com/en/api.html#app.set)
