@@ -4,8 +4,10 @@ const path = require('path');
 
 const express = require('express');
 
-const adminData = require('./routes/admin');
+const adminRoutes = require('./routes/admin');
 const shopRoutes = require('./routes/shop');
+
+const errorController = require('./controllers/error')
 
 const app = express();
 
@@ -16,14 +18,10 @@ app.set('views', 'views') // this tells express where to find the views to be us
 
 app.use(express.static(path.join(__dirname, 'public')))
 
-app.use('/admin', adminData.routes);
+app.use('/admin', adminRoutes);
 app.use(shopRoutes);
 
-app.use((req, res, next) => {
-  // res.status(404).send('<h1>Page not found</h1>');
-  // res.status(404).sendFile(path.join(__dirname, 'views', '404.html'));
-  res.render('404', {docTitle: 'Page Not Found'})
-});
+app.use(errorController.get404);
 
 app.listen(3000); // this is the equivalent to the node.js code we were previously using below
 // const server = http.createServer(app);

@@ -1,36 +1,16 @@
-const path = require('path');
 const express = require('express');
+const path = require('path');
 
-const rootDir = require('../util/path');
+const productsController = require('../controllers/products')
 
 const bodyParser = require('body-parser');
 
 const router = express.Router();
 
-const products = [];
-
 router.use(bodyParser.urlencoded({ extended: false }));
 
-router.get('/add-product', (req, res, next) => {
-  // res.sendFile(path.join(rootDir, 'views', 'add-product.html')); // code used without rendering engine
-  res.render('add-product', {
-    docTitle: 'Add Product',
-    path: '/admin/add-product',
-    activeAddProduct: true,
-    productCSS: true, 
-    formsCSS: true,
-  });
-});
+router.get('/add-product', productsController.getAddProduct);
 
-router.post('/add-product', (req, res, next) => {
-  products.push({ title: req.body.title });
-  console.log(req.body);
-  res.redirect('/');
-});
+router.post('/add-product', productsController.postAddProduct);
 
-// router.get('/product', (req, res, next) => {
-//   res.send('<h1>Product Page</h1>');
-// });
-
-exports.routes = router;
-exports.products = products;
+module.exports = router
