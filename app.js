@@ -11,6 +11,8 @@ const errorController = require('./controllers/error')
 
 const app = express();
 
+app.use(express.urlencoded({ extended: true }));
+
 // The below configures the templating engine for the app, as well as defines the location to the views the templating engine will use
 // See app.set() in the Express.js docs for more (https://expressjs.com/en/api.html#app.set)
 app.set('view engine', 'ejs') // this sets the template engine for the app to whatever your preference is here
