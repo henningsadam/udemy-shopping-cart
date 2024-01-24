@@ -6,7 +6,7 @@
     <%- include('../includes/navigation.ejs') %>
 
     <main>
-      <h1>Shop Home</h1>
+      <h1>All Products</h1>
       <% if (prods.length > 0) { %>
       <div class="grid">
         <% for (let product of prods) { %>
@@ -16,15 +16,14 @@
           </header>
           <div class="card__image">
             <img
-              src="https://cdn.pixabay.com/photo/2016/03/31/20/51/book-1296045_960_720.png"
-              alt="A Book"
+              src="<%= product.imageUrl %>"
+              alt="<%= product.imageUrl %>"
             />
           </div>
           <div class="card__content">
-            <h2 class="product__price">$19.99</h2>
+            <h2 class="product__price">$<%= product.price %></h2>
             <p class="product__description">
-              A very interesting book about so many even more interesting
-              things!
+              <%= product.description %>
             </p>
           </div>
           <div class="card__actions">
@@ -34,7 +33,7 @@
         <% } %>
       </div>
       <% } else { %>
-      <h1>No products found</h1>
+      <p>No products found</p>
       <% } %>
     </main>
 <%- include('../includes/end.ejs') %>
