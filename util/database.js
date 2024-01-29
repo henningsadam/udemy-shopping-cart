@@ -1,5 +1,5 @@
 require('dotenv').config();
-const Sequelize = require('sequelize'); // imported using title case as importing a constructor
+const { Sequelize } = require('sequelize'); // imported using title case as importing a constructor
 
 const sequelize = new Sequelize(
   process.env.DB_NAME,

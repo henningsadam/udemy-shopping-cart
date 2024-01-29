@@ -7,9 +7,8 @@ const express = require('express');
 const adminRoutes = require('./routes/admin');
 const shopRoutes = require('./routes/shop');
 
-
 const errorController = require('./controllers/error');
-const db = require('./util/database');
+const sequelize = require('./util/database');
 
 const app = express();
 
@@ -27,6 +26,13 @@ app.use(shopRoutes);
 
 app.use(errorController.get404);
 
-app.listen(3000); // this is the equivalent to the node.js code we were previously using below
+sequelize
+  .sync()
+  .then(() => {
+    app.listen(3000);
+  })
+  .catch((error) => console.log(error));
+
+// this is the equivalent to the node.js code we were previously using below
 // const server = http.createServer(app);
 // server.listen(3000);
