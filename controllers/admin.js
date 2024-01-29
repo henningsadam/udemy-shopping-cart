@@ -58,21 +58,24 @@ exports.postAddProduct = (req, res, next) => {
   const price = req.body.price;
   const description = req.body.description;
 
-  const product = new Product(null, title, imageUrl, description, price);
-  product
-    .save()
-    .then(() => {
-      res.redirect('/');
-    })
-    .catch((err) => console.log(err));
+  Product.create({
+    title: title,
+    price: price,
+    imageUrl: imageUrl,
+    description: description,
+  })
+    .then(() => console.log('Successfully created product'))
+    .catch((error) => console.log(error));
 };
 
 exports.getProducts = (req, res, next) => {
-  const products = Product.fetchAll((products) => {
-    res.render('admin/products', {
-      prods: products,
-      docTitle: 'Admin Products',
-      path: '/admin/products',
-    });
-  });
+  Product.findAll()
+    .then((products) => {
+      res.render('admin/products', {
+        prods: products,
+        docTitle: 'Admin Products',
+        path: '/admin/products',
+      });
+    })
+    .catch((err) => console.log(err));
 };
