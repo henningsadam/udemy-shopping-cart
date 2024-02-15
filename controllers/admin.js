@@ -6,8 +6,25 @@ exports.getAddProduct = (req, res, next) => {
     docTitle: 'Add Product',
     path: '/admin/add-product',
     editing: false,
-    isAuthenticated: req.isLoggedIn
+    isAuthenticated: req.isLoggedIn,
   });
+};
+
+exports.postAddProduct = (req, res, next) => {
+  const title = req.body.title;
+  const imageUrl = req.body.imageUrl;
+  const price = req.body.price;
+  const description = req.body.description;
+
+  const product = new Product(title, price, description, imageUrl);
+
+  product
+    .save()
+    .then((result) => {
+      console.log('Successfully created product');
+      res.redirect('/admin/products');
+    })
+    .catch((error) => console.log(error));
 };
 
 exports.getEditProduct = (req, res, next) => {
@@ -17,7 +34,7 @@ exports.getEditProduct = (req, res, next) => {
     return res.redirect('/');
   }
   const prodId = req.params.productId;
-  Product.findByPk(prodId)
+  Product.findById(prodId)
     .then((product) => {
       if (!product) {
         return res.redirect('/');
@@ -27,7 +44,7 @@ exports.getEditProduct = (req, res, next) => {
         path: '/admin/edit-product',
         editing: editMode,
         product: product,
-        isAuthenticated: req.isLoggedIn
+        isAuthenticated: req.isLoggedIn,
       });
     })
     .catch((err) => console.log(err));
@@ -39,14 +56,16 @@ exports.postEditProduct = (req, res, next) => {
   const updatedPrice = req.body.price;
   const updatedImageUrl = req.body.imageUrl;
   const updatedDescription = req.body.description;
-  Product.findByPk(prodId)
-    .then((product) => {
-      product.title = updatedTitle;
-      product.price = updatedPrice;
-      product.imageUrl = updatedImageUrl;
-      product.description = updatedDescription;
-      return product.save();
-    })
+  const product = new Product(
+    updatedTitle,
+    updatedPrice,
+    updatedDescription,
+    updatedImageUrl,
+    prodId
+  );
+
+  product
+    .save()
     .then((result) => {
       console.log('Successfully updated product');
       res.redirect('/admin/products');
@@ -57,8 +76,7 @@ exports.postEditProduct = (req, res, next) => {
 exports.postDeleteProduct = async (req, res, next) => {
   const prodId = req.body.productId;
   try {
-    const product = await Product.findByPk(prodId);
-    await product.destroy();
+    await Product.deleteById(prodId);
     console.log('Product successfully deleted');
     res.redirect('/admin/products');
   } catch (error) {
@@ -66,34 +84,14 @@ exports.postDeleteProduct = async (req, res, next) => {
   }
 };
 
-exports.postAddProduct = (req, res, next) => {
-  const title = req.body.title;
-  const imageUrl = req.body.imageUrl;
-  const price = req.body.price;
-  const description = req.body.description;
-  req.user
-    .createProduct({
-      title: title,
-      price: price,
-      imageUrl: imageUrl,
-      description: description,
-    })
-    .then(() => {
-      console.log('Successfully created product');
-      res.redirect('/admin/products');
-    })
-    .catch((error) => console.log(error));
-};
-
 exports.getProducts = (req, res, next) => {
-  req.user
-    .getProducts()
+  Product.fetchAll()
     .then((products) => {
       res.render('admin/products', {
         prods: products,
         docTitle: 'Admin Products',
         path: '/admin/products',
-        isAuthenticated: req.isLoggedIn
+        isAuthenticated: req.isLoggedIn,
       });
     })
     .catch((err) => console.log(err));

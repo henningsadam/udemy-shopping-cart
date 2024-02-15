@@ -7,16 +7,11 @@ const session = require('express-session');
 
 const adminRoutes = require('./routes/admin');
 const shopRoutes = require('./routes/shop');
-const authRoutes = require('./routes/auth');
+// const authRoutes = require('./routes/auth');
 
 const errorController = require('./controllers/error');
-const sequelize = require('./util/database');
-const Product = require('./models/product');
-const User = require('./models/user');
-const Cart = require('./models/cart');
-const CartItem = require('./models/cart-item');
-const Order = require('./models/order');
-const OrderItem = require('./models/order-item');
+const mongoConnect = require('./util/database').mongoConnect;
+const { log } = require('console');
 
 const app = express();
 
@@ -33,57 +28,21 @@ app.use(
 );
 
 app.use((req, res, next) => {
-  User.findByPk(1)
-    .then((user) => {
-      req.user = user;
-      next();
-    })
-    .catch((err) => console.log(err));
+  // User.findByPk(1)
+  //   .then((user) => {
+  //     req.user = user;
+  //     next();
+  //   })
+  //   .catch((err) => console.log(err));
+  next();
 });
 
 app.use('/admin', adminRoutes);
 app.use(shopRoutes);
-app.use(authRoutes);
+// app.use(authRoutes);
 
 app.use(errorController.get404);
 
-Product.belongsTo(User, { constraints: true, onDelete: 'CASCADE' });
-User.hasMany(Product);
-
-User.hasOne(Cart);
-Cart.belongsTo(User);
-
-Cart.belongsToMany(Product, { through: CartItem });
-Product.belongsToMany(Cart, { through: CartItem });
-
-Order.belongsTo(User);
-User.hasMany(Order);
-
-Order.belongsToMany(Product, { through: OrderItem });
-
-sequelize
-  // .sync({force: true})
-  .sync()
-  .then(() => {
-    return User.findByPk(1);
-  })
-  .then((user) => {
-    if (!user) {
-      return User.create({ name: 'Adam', email: 'email@email.com' });
-    }
-    return Promise.resolve(user);
-  })
-  .then((user) => {
-    // Check if the user already has a cart
-    return user.getCart().then((cart) => {
-      if (!cart) {
-        // If the user doesn't have a cart, create a new one
-        return user.createCart();
-      }
-      return Promise.resolve(cart);
-    });
-  })
-  .then((cart) => {
-    app.listen(3000);
-  })
-  .catch((error) => console.log(error));
+mongoConnect(() => {
+  app.listen(3000);
+});
