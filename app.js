@@ -3,9 +3,11 @@
 const path = require('path');
 
 const express = require('express');
+const session = require('express-session');
 
 const adminRoutes = require('./routes/admin');
 const shopRoutes = require('./routes/shop');
+const authRoutes = require('./routes/auth');
 
 const errorController = require('./controllers/error');
 const sequelize = require('./util/database');
@@ -26,6 +28,9 @@ app.set('view engine', 'ejs'); // this sets the template engine for the app to w
 app.set('views', 'views'); // this tells express where to find the views to be used by templating engine
 
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(
+  session({ secret: 'my secret', resave: false, saveUninitialized: false })
+);
 
 app.use((req, res, next) => {
   User.findByPk(1)
@@ -38,6 +43,7 @@ app.use((req, res, next) => {
 
 app.use('/admin', adminRoutes);
 app.use(shopRoutes);
+app.use(authRoutes);
 
 app.use(errorController.get404);
 
@@ -50,10 +56,10 @@ Cart.belongsTo(User);
 Cart.belongsToMany(Product, { through: CartItem });
 Product.belongsToMany(Cart, { through: CartItem });
 
-Order.belongsTo(User)
-User.hasMany(Order)
+Order.belongsTo(User);
+User.hasMany(Order);
 
-Order.belongsToMany(Product, {through: OrderItem})
+Order.belongsToMany(Product, { through: OrderItem });
 
 sequelize
   // .sync({force: true})
@@ -69,14 +75,13 @@ sequelize
   })
   .then((user) => {
     // Check if the user already has a cart
-    return user.getCart()
-      .then(cart => {
-        if (!cart) {
-          // If the user doesn't have a cart, create a new one
-          return user.createCart();
-        }
-        return Promise.resolve(cart);
-      });
+    return user.getCart().then((cart) => {
+      if (!cart) {
+        // If the user doesn't have a cart, create a new one
+        return user.createCart();
+      }
+      return Promise.resolve(cart);
+    });
   })
   .then((cart) => {
     app.listen(3000);
