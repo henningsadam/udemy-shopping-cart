@@ -42,19 +42,19 @@ exports.getProduct = (req, res, next) => {
 };
 
 exports.getCart = (req, res, next) => {
-  req.user.getCart().then((cart) => {
-    return cart
-      .getProducts()
-      .then((products) => {
-        res.render('shop/cart', {
-          products: products,
-          docTitle: 'My Cart',
-          path: '/cart',
-          isAuthenticated: req.isLoggedIn,
-        });
-      })
-      .catch((err) => console.log(err));
-  });
+  req.user
+    .getCart()
+    .then((products) => {
+      console.log('fromgetcart')
+      console.log(products)
+      res.render('shop/cart', {
+        products: products,
+        docTitle: 'My Cart',
+        path: '/cart',
+        isAuthenticated: req.isLoggedIn,
+      });
+    })
+    .catch((err) => console.log(err));
 };
 
 exports.postOrder = (req, res, next) => {
