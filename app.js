@@ -11,7 +11,7 @@ const shopRoutes = require('./routes/shop');
 
 const errorController = require('./controllers/error');
 const mongoConnect = require('./util/database').mongoConnect;
-const { log } = require('console');
+const User = require('./models/user')
 
 const app = express();
 
@@ -28,13 +28,12 @@ app.use(
 );
 
 app.use((req, res, next) => {
-  // User.findByPk(1)
-  //   .then((user) => {
-  //     req.user = user;
-  //     next();
-  //   })
-  //   .catch((err) => console.log(err));
-  next();
+  User.findById('65cf962ae396c29306cf8cd6')
+    .then((user) => {
+      req.user = user;
+      next();
+    })
+    .catch((err) => console.log(err));
 });
 
 app.use('/admin', adminRoutes);
