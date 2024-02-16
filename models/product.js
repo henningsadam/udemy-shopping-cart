@@ -35,7 +35,7 @@ class Product {
     const db = getDb();
     return db
       .collection('products')
-      .findOne({ _id: mongodb.ObjectId.createFromHexString(productId) })
+      .findOne({ _id: new mongodb.ObjectId(productId) })
       .then((product) => {
         console.log(product);
         return product;

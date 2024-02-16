@@ -7,7 +7,7 @@ exports.getHomepage = (req, res, next) => {
         prods: products,
         docTitle: 'Shop Home',
         path: '/',
-        isAuthenticated: req.isLoggedIn
+        isAuthenticated: req.isLoggedIn,
       });
     })
     .catch((err) => console.log(err));
@@ -20,7 +20,7 @@ exports.getProducts = (req, res, next) => {
         prods: products,
         docTitle: 'All Products',
         path: '/products',
-        isAuthenticated: req.isLoggedIn
+        isAuthenticated: req.isLoggedIn,
       });
     })
     .catch((err) => console.log(err));
@@ -35,7 +35,7 @@ exports.getProduct = (req, res, next) => {
         product: product,
         docTitle: 'Product | ' + product.title,
         path: '/products',
-        isAuthenticated: req.isLoggedIn
+        isAuthenticated: req.isLoggedIn,
       });
     })
     .catch((err) => console.log(err));
@@ -50,7 +50,7 @@ exports.getCart = (req, res, next) => {
           products: products,
           docTitle: 'My Cart',
           path: '/cart',
-          isAuthenticated: req.isLoggedIn
+          isAuthenticated: req.isLoggedIn,
         });
       })
       .catch((err) => console.log(err));
@@ -89,42 +89,15 @@ exports.postOrder = (req, res, next) => {
 
 exports.postCart = (req, res, next) => {
   const prodId = req.body.productId;
-  let fetchedCart;
-  let newQuantity = 1;
-  req.user
-    .getCart()
-    .then((cart) => {
-      fetchedCart = cart;
-      return cart.getProducts({ where: { id: prodId } });
-    })
-    .then((products) => {
-      let product;
-      if (products.length > 0) {
-        product = products[0];
-      }
-
-      if (product) {
-        const oldQuantity = product.cartItem.quantity;
-        newQuantity = oldQuantity + 1;
-        return product;
-      }
-      return Product.findById(prodId);
-    })
+  Product.findById(prodId)
     .then((product) => {
-      return fetchedCart.addProduct(product, {
-        through: { quantity: newQuantity },
-      });
+      return req.user.addToCart(product);
     })
+    .then((result) => console.log(result))
     .then(() => {
       res.redirect('/cart');
     })
     .catch((err) => console.log(err));
-
-  // const prodId = req.body.productId;
-  // Product.findById(prodId, (product) => {
-  //   Cart.addProduct(prodId, product.price);
-  // });
-  // res.redirect('/cart');
 };
 
 exports.postCartDeleteItem = (req, res, next) => {
@@ -148,7 +121,7 @@ exports.getCheckout = (req, res, next) => {
   res.render('shop/checkout', {
     docTitle: 'Checkout',
     path: '/checkout',
-    isAuthenticated: req.isLoggedIn
+    isAuthenticated: req.isLoggedIn,
   });
 };
 
@@ -160,7 +133,7 @@ exports.getOrders = (req, res, next) => {
         docTitle: 'Orders',
         path: '/orders',
         orders: orders,
-        isAuthenticated: req.isLoggedIn
+        isAuthenticated: req.isLoggedIn,
       });
     })
     .catch((err) => console.log(err));

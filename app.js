@@ -11,7 +11,7 @@ const shopRoutes = require('./routes/shop');
 
 const errorController = require('./controllers/error');
 const mongoConnect = require('./util/database').mongoConnect;
-const User = require('./models/user')
+const User = require('./models/user');
 
 const app = express();
 
@@ -28,9 +28,9 @@ app.use(
 );
 
 app.use((req, res, next) => {
-  User.findById('65cf962ae396c29306cf8cd6')
+  User.findById('65cfd962cda04eea6deaa46a')
     .then((user) => {
-      req.user = user;
+      req.user = new User(user.name, user.email, user.cart, user._id);
       next();
     })
     .catch((err) => console.log(err));
