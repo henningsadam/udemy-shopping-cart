@@ -16,14 +16,13 @@ exports.postAddProduct = (req, res, next) => {
   const price = req.body.price;
   const description = req.body.description;
 
-  const product = new Product(
-    title,
-    price,
-    description,
-    imageUrl,
-    null,
-    req.user._id
-  );
+  const product = new Product({
+    title: title,
+    price: price,
+    description: description,
+    imageUrl: imageUrl,
+    userId: req.user,
+  });
 
   product
     .save()
@@ -63,16 +62,15 @@ exports.postEditProduct = (req, res, next) => {
   const updatedPrice = req.body.price;
   const updatedImageUrl = req.body.imageUrl;
   const updatedDescription = req.body.description;
-  const product = new Product(
-    updatedTitle,
-    updatedPrice,
-    updatedDescription,
-    updatedImageUrl,
-    prodId
-  );
 
-  product
-    .save()
+  Product.findById(prodId)
+    .then((product) => {
+      product.title = updatedTitle;
+      product.price = updatedPrice;
+      product.imageUrl = updatedImageUrl;
+      product.description = updatedDescription;
+      return product.save();
+    })
     .then((result) => {
       console.log('Successfully updated product');
       res.redirect('/admin/products');
@@ -83,8 +81,8 @@ exports.postEditProduct = (req, res, next) => {
 exports.postDeleteProduct = async (req, res, next) => {
   const prodId = req.body.productId;
   try {
-    await Product.deleteById(prodId);
-    console.log('Product successfully deleted');
+    await Product.findByIdAndDelete(prodId);
+    console.log('Successfully deleted product');
     res.redirect('/admin/products');
   } catch (error) {
     console.log(error);
@@ -92,8 +90,10 @@ exports.postDeleteProduct = async (req, res, next) => {
 };
 
 exports.getProducts = (req, res, next) => {
-  Product.fetchAll()
+  Product.find()
+    .populate('userId')
     .then((products) => {
+      console.log(products)
       res.render('admin/products', {
         prods: products,
         docTitle: 'Admin Products',
