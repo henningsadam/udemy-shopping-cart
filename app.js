@@ -8,6 +8,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const session = require('express-session');
 const MongoDBStore = require('connect-mongodb-session')(session);
+const flash = require('connect-flash')
 
 require('dotenv').config(); // Add this line to load environment variables from .env file
 
@@ -46,6 +47,8 @@ app.use(
 );
 
 app.use(csrfProtection);
+
+app.use(flash())
 
 app.use((req, res, next) => {
   if (!req.session.user) {
