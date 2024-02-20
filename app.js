@@ -6,10 +6,11 @@ const dotenv = require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const session = require('express-session');
+const MongoDBStore = require('connect-mongodb-session')(session);
 
 require('dotenv').config(); // Add this line to load environment variables from .env file
 
-const dbConnectionString = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@udemy-sandbox.rayfqu3.mongodb.net/shop?retryWrites=true&w=majority`;
+const dbConnectionString = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@udemy-sandbox.rayfqu3.mongodb.net/shop?w=majority`;
 
 const adminRoutes = require('./routes/admin');
 const shopRoutes = require('./routes/shop');
@@ -19,6 +20,10 @@ const errorController = require('./controllers/error');
 const User = require('./models/user');
 
 const app = express();
+const sessionStore = new MongoDBStore({
+  uri: dbConnectionString,
+  collection: 'sessions'
+})
 
 app.use(express.urlencoded({ extended: true }));
 
@@ -29,17 +34,13 @@ app.set('views', 'views'); // this tells express where to find the views to be u
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(
-  session({ secret: 'my secret', resave: false, saveUninitialized: false })
+  session({ secret: 'my secret', resave: false, saveUninitialized: false, store: sessionStore })
 );
 
-app.use((req, res, next) => {
-  User.findById('65d2a29449fd30868c4b1e99')
-    .then((user) => {
-      req.user = user;
-      next();
-    })
-    .catch((err) => console.log(err));
-});
+
+// When you login, fetch user data. This shouldn't be done on every request like it is below.
+// 1) instead of storing the user on the request (like what is happening below here), store the user in the session - ONLY AFTER they've logged in
+// 2) Then, adjust all of the .render calls in the controllers which are referencing the old location of user data
 
 app.use('/admin', adminRoutes);
 app.use(shopRoutes);
