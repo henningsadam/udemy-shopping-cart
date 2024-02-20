@@ -11,6 +11,8 @@
               <img src="<%= product.imageUrl %>" alt="<%= product.title %>">
             </div>
             <p><%= product.description %></p>
-            <%- include('../includes/add-to-cart.ejs') %>
+            <% if (isAuthenticated) { %>
+              <%- include('../includes/add-to-cart.ejs') %>
+            <% } %>
         </main>
         <%- include('../includes/end.ejs') %>

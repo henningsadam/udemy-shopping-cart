@@ -22,8 +22,8 @@ const User = require('./models/user');
 const app = express();
 const sessionStore = new MongoDBStore({
   uri: dbConnectionString,
-  collection: 'sessions'
-})
+  collection: 'sessions',
+});
 
 app.use(express.urlencoded({ extended: true }));
 
@@ -34,13 +34,25 @@ app.set('views', 'views'); // this tells express where to find the views to be u
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(
-  session({ secret: 'my secret', resave: false, saveUninitialized: false, store: sessionStore })
+  session({
+    secret: 'my secret',
+    resave: false,
+    saveUninitialized: false,
+    store: sessionStore,
+  })
 );
 
-
-// When you login, fetch user data. This shouldn't be done on every request like it is below.
-// 1) instead of storing the user on the request (like what is happening below here), store the user in the session - ONLY AFTER they've logged in
-// 2) Then, adjust all of the .render calls in the controllers which are referencing the old location of user data
+app.use((req, res, next) => {
+  if (!req.session.user) {
+    return next();
+  }
+  User.findById(req.session.user._id)
+    .then((user) => {
+      req.user = user;
+      next();
+    })
+    .catch((err) => console.log(err));
+});
 
 app.use('/admin', adminRoutes);
 app.use(shopRoutes);
