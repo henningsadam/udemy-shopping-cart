@@ -2,6 +2,7 @@
 
 const path = require('path');
 const dotenv = require('dotenv').config();
+const csrf = require('csurf');
 
 const express = require('express');
 const mongoose = require('mongoose');
@@ -25,6 +26,8 @@ const sessionStore = new MongoDBStore({
   collection: 'sessions',
 });
 
+const csrfProtection = csrf({});
+
 app.use(express.urlencoded({ extended: true }));
 
 // The below configures the templating engine for the app, as well as defines the location to the views the templating engine will use
@@ -42,6 +45,8 @@ app.use(
   })
 );
 
+app.use(csrfProtection);
+
 app.use((req, res, next) => {
   if (!req.session.user) {
     return next();
@@ -54,6 +59,12 @@ app.use((req, res, next) => {
     .catch((err) => console.log(err));
 });
 
+app.use((req, res, next) => {
+  res.locals.isAuthenticated = req.session.isLoggedIn;
+  res.locals.csrfToken = req.csrfToken();
+  next();
+});
+
 app.use('/admin', adminRoutes);
 app.use(shopRoutes);
 app.use(authRoutes);
@@ -63,16 +74,6 @@ app.use(errorController.get404);
 mongoose
   .connect(dbConnectionString)
   .then((result) => {
-    User.findOne().then((user) => {
-      if (!user) {
-        const user = new User({
-          name: 'Adam',
-          email: 'something@something.com',
-          cart: { items: [] },
-        });
-        user.save();
-      }
-    });
     app.listen(3000);
     console.log('Connected!');
   })

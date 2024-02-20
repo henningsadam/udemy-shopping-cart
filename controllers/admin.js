@@ -1,12 +1,10 @@
 const Product = require('../models/product');
 
 exports.getAddProduct = (req, res, next) => {
-  // res.sendFile(path.join(rootDir, 'views', 'add-product.html')); // code used without rendering engine
   res.render('admin/edit-product', {
     docTitle: 'Add Product',
     path: '/admin/add-product',
     editing: false,
-    isAuthenticated: req.session.isLoggedIn,
   });
 };
 
@@ -50,7 +48,6 @@ exports.getEditProduct = (req, res, next) => {
         path: '/admin/edit-product',
         editing: editMode,
         product: product,
-        isAuthenticated: req.session.isLoggedIn,
       });
     })
     .catch((err) => console.log(err));
@@ -93,12 +90,11 @@ exports.getProducts = (req, res, next) => {
   Product.find()
     .populate('userId')
     .then((products) => {
-      console.log(products)
+      console.log(products);
       res.render('admin/products', {
         prods: products,
         docTitle: 'Admin Products',
         path: '/admin/products',
-        isAuthenticated: req.session.isLoggedIn,
       });
     })
     .catch((err) => console.log(err));
