@@ -1,5 +1,17 @@
 const User = require('../models/user');
 const bcrypt = require('bcryptjs');
+const nodemailer = require('nodemailer');
+const dotenv = require('dotenv').config();
+const mailgunTransporter = require('nodemailer-mailgun-transport');
+
+const transporter = nodemailer.createTransport(
+  mailgunTransporter({
+    auth: {
+      api_key: process.env.MAILGUN_API_KEY,
+      domain: process.env.MAILGUN_DOMAIN,
+    },
+  })
+);
 
 exports.getLogin = (req, res, next) => {
   let message = req.flash('error');
@@ -91,6 +103,12 @@ exports.postSignup = (req, res, next) => {
         })
         .then((result) => {
           res.redirect('/login');
+          return transporter.sendMail({
+            from: 'welcome@udemy-node.com',
+            to: 'hennings.adam.dev+test@gmail.com',
+            subject: 'Welcome to the Node.js shop!',
+            html: '<b>Congrats! Your account was created!</b>',
+          });
         });
     })
 
