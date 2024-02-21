@@ -227,6 +227,11 @@ form {
   background-color: lightcoral;
 }
 
+.user-message--success {
+  border-color: green;
+  background-color: lightgreen;
+}
+
 @media (min-width: 768px) {
   .main-header__nav {
     display: flex;
