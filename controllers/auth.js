@@ -2,8 +2,10 @@ const User = require('../models/user');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
+const { validationResult } = require('express-validator');
 const dotenv = require('dotenv').config();
 const mailgunTransporter = require('nodemailer-mailgun-transport');
+const { error } = require('console');
 
 const transporter = nodemailer.createTransport(
   mailgunTransporter({
@@ -27,11 +29,17 @@ exports.getLogin = (req, res, next) => {
   } else {
     successMessage = null;
   }
+
   res.render('auth/login', {
     docTitle: 'Login',
     path: '/login',
     errorMessage: errorMessage,
     successMessage: successMessage,
+    validationErrors: [],
+    formData: {
+      email: '',
+      password: '',
+    },
   });
 };
 
@@ -39,11 +47,34 @@ exports.postLogin = (req, res, next) => {
   const email = req.body.email;
   const password = req.body.password;
 
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    console.log(errors.array());
+    return res.status(422).render('auth/login', {
+      docTitle: 'Login',
+      path: '/login',
+      errorMessage: errors.array()[0].msg,
+      formData: {
+        email: email,
+        password: password,
+      },
+      validationErrors: errors.array(),
+    });
+  }
+
   User.findOne({ email: email })
     .then((user) => {
       if (!user) {
-        req.flash('error', 'Invalid email or password');
-        return res.redirect('/login');
+        return res.status(422).render('auth/login', {
+          docTitle: 'Login',
+          path: '/login',
+          errorMessage: 'No account found with that email address. Please try again.',
+          formData: {
+            email: email,
+            password: password,
+          },
+          validationErrors: errors.array({path: 'email'}),
+        });
       }
       bcrypt
         .compare(password, user.password)
@@ -56,8 +87,16 @@ exports.postLogin = (req, res, next) => {
               res.redirect('/');
             });
           }
-          req.flash('error', 'Invalid password. Please Try again.');
-          return res.redirect('/login');
+          return res.status(422).render('auth/login', {
+            docTitle: 'Login',
+            path: '/login',
+            errorMessage: 'Invalid password. Please try again.',
+            formData: {
+              email: email,
+              password: password,
+            },
+            validationErrors: errors.array({path: 'password'}),
+          });
         })
         .catch((err) => {
           console.log(err);
@@ -85,6 +124,8 @@ exports.getSignup = (req, res, next) => {
     docTitle: 'Sign Up',
     path: '/signup',
     errorMessage: message,
+    oldInput: { email: '', password: '', comfirmPassword: '' },
+    validationErrors: [],
   });
 };
 
@@ -93,33 +134,41 @@ exports.postSignup = (req, res, next) => {
   const password = req.body.password;
   const confirmPassword = req.body.confirmPassword;
 
-  User.findOne({ email: email })
-    .then((userDoc) => {
-      if (userDoc) {
-        req.flash('error', 'Email already in use. Please try again.');
-        return res.redirect('/signup');
-      }
-      return bcrypt
-        .hash(password, 12)
-        .then((hashedPassword) => {
-          const user = new User({
-            email: email,
-            password: hashedPassword,
-            cart: { items: [] },
-          });
-          return user.save();
-        })
-        .then((result) => {
-          res.redirect('/login');
-          return transporter.sendMail({
-            from: 'welcome@udemy-node.com',
-            to: 'hennings.adam.dev+test@gmail.com',
-            subject: 'Welcome to the Node.js shop!',
-            html: '<b>Congrats! Your account was created!</b>',
-          });
-        });
-    })
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    console.log(errors.array());
+    return res.status(422).render('auth/signup', {
+      docTitle: 'Sign Up',
+      path: '/signup',
+      errorMessage: errors.array()[0].msg,
+      oldInput: {
+        email: email,
+        password: password,
+        comfirmPassword: confirmPassword,
+      },
+      validationErrors: errors.array(),
+    });
+  }
 
+  bcrypt
+    .hash(password, 12)
+    .then((hashedPassword) => {
+      const user = new User({
+        email: email,
+        password: hashedPassword,
+        cart: { items: [] },
+      });
+      return user.save();
+    })
+    .then((result) => {
+      res.redirect('/login');
+      return transporter.sendMail({
+        from: 'welcome@udemy-node.com',
+        to: 'hennings.adam.dev+test@gmail.com',
+        subject: 'Welcome to the Node.js shop!',
+        html: '<b>Congrats! Your account was created!</b>',
+      });
+    })
     .catch((err) => console.log(err));
 };
 
@@ -225,7 +274,7 @@ exports.postReset = (req, res, next) => {
         return resetUser.save();
       })
       .then((result) => {
-        console.log('Password successfully reset!')
+        console.log('Password successfully reset!');
         req.flash('success', 'Password reset successfully!');
         res.redirect('/login');
       })

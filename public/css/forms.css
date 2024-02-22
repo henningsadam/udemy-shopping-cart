@@ -3,7 +3,7 @@
 }
 
 .form-control label,
-.form-control input, 
+.form-control input,
 .form-control textarea {
   display: block;
   width: 100%;
@@ -19,4 +19,9 @@
 .form-control input:focus,
 .form-control textarea:focus {
   outline-color: #00695c;
+}
+
+.form-control input.invalid,
+.form-control textarea.invalid {
+  border-color: red;
 }
