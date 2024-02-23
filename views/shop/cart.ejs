@@ -1,4 +1,5 @@
 <%- include('../includes/head.ejs') %>
+<link rel="stylesheet" href="/css/cart.css">
   </head>
 
   <body>
@@ -6,9 +7,9 @@
     <main>
       <h1>Cart Page</h1>
       <% if (products.length > 0) { %>
-        <ul>
+        <ul class="cart__item-list">
           <% products.forEach(p => { %>
-           <li><p><%= p.productId.title %> (Qty: <%= p.quantity %>)</p>
+           <li class="cart__item"><p><%= p.productId.title %> (Qty: <%= p.quantity %>)</p>
             <form action="/cart-delete-item" method="post">
               <input type="hidden" name="productId" value="<%= p.productId._id %>">
               <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
@@ -17,10 +18,11 @@
           </li>
           <% }) %>
         </ul>
-        <form action="/create-order" method="POST">
+        <a class="btn" href="/checkout">Order Now</a>
+        <!-- <form action="/create-order" method="POST">
           <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
           <button class="btn" type="submit">Order Now</button>
-        </form>
+        </form> -->
       <% } else { %>
         <p>No products found...</p>
       <% } %>

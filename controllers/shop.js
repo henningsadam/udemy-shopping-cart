@@ -4,6 +4,8 @@ const Order = require('../models/order');
 const fs = require('fs');
 const path = require('path');
 const PDFDocument = require('pdfkit');
+require('dotenv').config();
+const stripe = require('stripe')(process.env.STRIPE_SEC_API_KEY);
 
 const ITEMS_PER_PAGE = 2;
 
@@ -14,7 +16,7 @@ exports.getHomepage = (req, res, next) => {
   Product.find()
     .countDocuments()
     .then((numProducts) => {
-      totalItems = numProducts
+      totalItems = numProducts;
       return Product.find()
         .skip((page - 1) * ITEMS_PER_PAGE)
         .limit(ITEMS_PER_PAGE);
@@ -30,7 +32,7 @@ exports.getHomepage = (req, res, next) => {
         hasPrevPage: page > 1,
         nextPage: page + 1,
         prevPage: page - 1,
-        lastPage: Math.ceil(totalItems / ITEMS_PER_PAGE)
+        lastPage: Math.ceil(totalItems / ITEMS_PER_PAGE),
       });
     })
     .catch((error) => {
@@ -47,7 +49,7 @@ exports.getProducts = (req, res, next) => {
   Product.find()
     .countDocuments()
     .then((numProducts) => {
-      totalItems = numProducts
+      totalItems = numProducts;
       return Product.find()
         .skip((page - 1) * ITEMS_PER_PAGE)
         .limit(ITEMS_PER_PAGE);
@@ -63,7 +65,7 @@ exports.getProducts = (req, res, next) => {
         hasPrevPage: page > 1,
         nextPage: page + 1,
         prevPage: page - 1,
-        lastPage: Math.ceil(totalItems / ITEMS_PER_PAGE)
+        lastPage: Math.ceil(totalItems / ITEMS_PER_PAGE),
       });
     })
     .catch((error) => {
@@ -137,6 +139,32 @@ exports.postOrder = (req, res, next) => {
     });
 };
 
+exports.getCheckoutSuccess = (req, res, next) => {
+  req.user
+    .populate('cart.items.productId')
+    .then((user) => {
+      const products = user.cart.items.map((i) => {
+        return { quantity: i.quantity, product: { ...i.productId._doc } };
+      });
+      const order = new Order({
+        user: { email: req.user.email, userId: req.user },
+        products: products,
+      });
+      order.save();
+    })
+    .then(() => {
+      return req.user.clearCart();
+    })
+    .then((result) => {
+      res.redirect('/orders');
+    })
+    .catch((error) => {
+      const err = new Error(error);
+      err.httpStatusCode = 500;
+      return next(err);
+    });
+};
+
 exports.postCart = (req, res, next) => {
   const prodId = req.body.productId;
   Product.findById(prodId)
@@ -169,10 +197,51 @@ exports.postCartDeleteItem = (req, res, next) => {
 };
 
 exports.getCheckout = (req, res, next) => {
-  res.render('shop/checkout', {
-    docTitle: 'Checkout',
-    path: '/checkout',
-  });
+  let products;
+  let total = 0;
+  req.user
+    .populate('cart.items.productId')
+    .then((user) => {
+      products = user.cart.items;
+      products.forEach((p) => {
+        total += p.quantity * p.productId.price;
+      });
+      return stripe.checkout.sessions.create({
+        payment_method_types: ['card'],
+        mode: 'payment',
+        line_items: products.map((p) => {
+          return {
+            price_data: {
+              currency: 'usd',
+              unit_amount: p.productId.price * 100,
+              product_data: {
+                name: p.productId.title,
+                description: p.productId.description,
+              },
+            },
+            quantity: p.quantity,
+          };
+        }),
+        success_url:
+          req.protocol + '://' + req.get('host') + '/checkout/success',
+        cancel_url: req.protocol + '://' + req.get('host') + '/checkout/cancel',
+      });
+    })
+    .then((stripeSession) => {
+      res.render('shop/checkout', {
+        products: products,
+        docTitle: 'Checkout',
+        path: '/checkout',
+        totalSum: total,
+        stripeApiKey: process.env.STRIPE_PUB_API_KEY,
+        sessionId: stripeSession.id,
+      });
+    })
+    .catch((error) => {
+      const err = new Error(error);
+      err.httpStatusCode = 500;
+      return next(err);
+    });
 };
 
 exports.getOrders = (req, res, next) => {
