@@ -19,7 +19,6 @@ router.post(
     check('title')
       .isLength({ min: 2 })
       .withMessage('Title needs 2 or more characters'),
-    body('imageUrl').isURL().withMessage('Invalid URL. Please try again.'),
     body('price')
       .isFloat({ gt: 0.0 })
       .withMessage('Price must be more than $0'),
@@ -39,7 +38,6 @@ router.post(
     check('title')
       .isLength({ min: 2 })
       .withMessage('Title needs 2 or more characters'),
-    body('imageUrl').isURL().withMessage('Invalid URL. Please try again.'),
     body('price')
       .isFloat({ gt: 0.0 })
       .withMessage('Price must be more than $0'),

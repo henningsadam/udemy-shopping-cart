@@ -9,6 +9,7 @@ const mongoose = require('mongoose');
 const session = require('express-session');
 const MongoDBStore = require('connect-mongodb-session')(session);
 const flash = require('connect-flash');
+const multer = require('multer');
 
 require('dotenv').config(); // Add this line to load environment variables from .env file
 
@@ -30,6 +31,30 @@ const sessionStore = new MongoDBStore({
 const csrfProtection = csrf({});
 
 app.use(express.urlencoded({ extended: true }));
+const fileStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'images');
+  },
+  filename: (req, file, cb) => {
+    cb(null, new Date().toISOString() + '-' + file.originalname);
+  },
+});
+
+const fileFilter = (req, file, cb) => {
+  if (
+    file.mimetype === 'image/jpg' ||
+    file.mimetype === 'image/png' ||
+    file.mimetype === 'image/jpeg'
+  ) {
+    cb(null, true);
+  } else {
+    cb(null, false);
+  }
+};
+
+app.use(
+  multer({ storage: fileStorage, fileFilter: fileFilter }).single('image')
+);
 
 // The below configures the templating engine for the app, as well as defines the location to the views the templating engine will use
 // See app.set() in the Express.js docs for more (https://expressjs.com/en/api.html#app.set)
@@ -37,6 +62,7 @@ app.set('view engine', 'ejs'); // this sets the template engine for the app to w
 app.set('views', 'views'); // this tells express where to find the views to be used by templating engine
 
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/images', express.static(path.join(__dirname, 'images')));
 app.use(
   session({
     secret: 'my secret',
@@ -63,8 +89,10 @@ app.use((req, res, next) => {
       req.user = user;
       next();
     })
-    .catch((err) => {
-      throw new Error(err);
+    .catch((error) => {
+      const err = new Error(error);
+      err.httpStatusCode = 500;
+      next(err);
     });
 });
 
