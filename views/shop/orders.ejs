@@ -1,28 +1,28 @@
 <%- include('../includes/head.ejs') %>
-    </head>
+  </head>
 
-    <body>
-        <%- include('../includes/navigation.ejs') %>
-        <main>
-            <% if (orders.length <= 0) { %>
-                <h1>Nothing there!</h1>
-            <% } else { %>
-                <ul>
-                    <% orders.forEach(order => { %>
-                        <li>
-                            <h1>
-                                Order ID: <%= order._id %>
-                            </h1>
-                            <ul>
-                                <% order.products.forEach(p => { %>
-                                 <li>
-                                    <%= p.product.title %> (Qty: <%= p.quantity %>)
-                                 </li>
-                                <% }) %>
-                            </ul>
-                        </li>
-                    <% }) %>
-                </ul>
-            <% } %>
-        </main>
-        <%- include('../includes/end.ejs') %>
+  <body>
+    <%- include('../includes/navigation.ejs') %>
+    <main>
+      <% if (orders.length <= 0) { %>
+        <h1>Nothing there!</h1>
+      <% } else { %>
+        <ul>
+          <% orders.forEach(order => { %>
+            <li>
+              <h1>
+                Order ID: <%= order._id %>
+              </h1>
+              <ul>
+                <% order.products.forEach(p => { %>
+                 <li>
+                  <%= p.product.title %> (Qty: <%= p.quantity %>) - <a href="/orders/<%= order._id %>">Download Invoice</a>
+                 </li>
+                <% }) %>
+              </ul>
+            </li>
+          <% }) %>
+        </ul>
+      <% } %>
+    </main>
+    <%- include('../includes/end.ejs') %>
