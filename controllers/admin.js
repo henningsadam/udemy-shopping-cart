@@ -179,7 +179,6 @@ exports.postEditProduct = (req, res, next) => {
 exports.postDeleteProduct = async (req, res, next) => {
   const prodId = req.body.productId;
   try {
-    
     const product = await Product.findById(prodId)
     if (!product) {
       return next(new Error('Product not found'))
