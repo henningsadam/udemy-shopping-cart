@@ -8,7 +8,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const session = require('express-session');
 const MongoDBStore = require('connect-mongodb-session')(session);
-const flash = require('connect-flash')
+const flash = require('connect-flash');
 
 require('dotenv').config(); // Add this line to load environment variables from .env file
 
@@ -48,7 +48,7 @@ app.use(
 
 app.use(csrfProtection);
 
-app.use(flash())
+app.use(flash());
 
 app.use((req, res, next) => {
   if (!req.session.user) {
@@ -56,10 +56,16 @@ app.use((req, res, next) => {
   }
   User.findById(req.session.user._id)
     .then((user) => {
+      if (!user) {
+        return next();
+      }
+
       req.user = user;
       next();
     })
-    .catch((err) => console.log(err));
+    .catch((err) => {
+      throw new Error(err);
+    });
 });
 
 app.use((req, res, next) => {
@@ -72,7 +78,13 @@ app.use('/admin', adminRoutes);
 app.use(shopRoutes);
 app.use(authRoutes);
 
+app.use('/500', errorController.get500);
 app.use(errorController.get404);
+
+app.use((error, req, res, next) => {
+  console.log(error);
+  res.redirect('/500');
+});
 
 mongoose
   .connect(dbConnectionString)

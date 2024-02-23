@@ -103,7 +103,11 @@ exports.postLogin = (req, res, next) => {
           res.redirect('/login');
         });
     })
-    .catch((err) => console.log(err));
+    .catch((error) => {
+      const err = new Error(error)
+      err.httpStatusCode = 500
+      return next(err)
+    });
 };
 
 exports.postLogout = (req, res, next) => {
@@ -169,7 +173,11 @@ exports.postSignup = (req, res, next) => {
         html: '<b>Congrats! Your account was created!</b>',
       });
     })
-    .catch((err) => console.log(err));
+    .catch((error) => {
+      const err = new Error(error)
+      err.httpStatusCode = 500
+      return next(err)
+    });
 };
 
 exports.getForgot = (req, res, next) => {
@@ -217,7 +225,11 @@ exports.postForgot = (req, res, next) => {
         `,
         });
       })
-      .catch((err) => console.log(err));
+      .catch((error) => {
+        const err = new Error(error)
+        err.httpStatusCode = 500
+        return next(err)
+      });
   });
 };
 
@@ -244,7 +256,11 @@ exports.getReset = (req, res, next) => {
         errorMessage: message,
       });
     })
-    .catch((err) => console.log(err));
+    .catch((error) => {
+      const err = new Error(error)
+      err.httpStatusCode = 500
+      return next(err)
+    });
 };
 
 exports.postReset = (req, res, next) => {
@@ -278,6 +294,10 @@ exports.postReset = (req, res, next) => {
         req.flash('success', 'Password reset successfully!');
         res.redirect('/login');
       })
-      .catch((err) => console.log(err));
+      .catch((error) => {
+        const err = new Error(error)
+        err.httpStatusCode = 500
+        return next(err)
+      });
   }
 };
