@@ -10,10 +10,15 @@ const session = require('express-session');
 const MongoDBStore = require('connect-mongodb-session')(session);
 const flash = require('connect-flash');
 const multer = require('multer');
+const helmet = require('helmet');
+const compression = require('compression');
+// const morgan = require('morgan');
+const fs = require('fs');
+const https = require('https');
 
 require('dotenv').config(); // Add this line to load environment variables from .env file
 
-const dbConnectionString = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@udemy-sandbox.rayfqu3.mongodb.net/shop?w=majority`;
+const dbConnectionString = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@udemy-sandbox.rayfqu3.mongodb.net/${process.env.DB_NAME}?w=majority`;
 
 const adminRoutes = require('./routes/admin');
 const shopRoutes = require('./routes/shop');
@@ -29,6 +34,9 @@ const sessionStore = new MongoDBStore({
 });
 
 const csrfProtection = csrf({});
+
+// const privateKey = fs.readFileSync('server.key');
+// const certificate = fs.readFileSync('server.cert');
 
 app.use(express.urlencoded({ extended: true }));
 const fileStorage = multer.diskStorage({
@@ -106,6 +114,15 @@ app.use('/admin', adminRoutes);
 app.use(shopRoutes);
 app.use(authRoutes);
 
+app.use(helmet());
+app.use(compression());
+//  Use the morgan package to write logs to a file on the server
+// const accessLogStream = fs.createWriteStream(
+//   path.join(__dirname, 'access.log'),
+//   { flags: 'a' }
+// );
+// app.use(morgan('combined', { stream: accessLogStream }));
+
 app.use('/500', errorController.get500);
 app.use(errorController.get404);
 
@@ -117,7 +134,11 @@ app.use((error, req, res, next) => {
 mongoose
   .connect(dbConnectionString)
   .then((result) => {
-    app.listen(3000);
+    // Demo of manually enabling a self-signed SSL cert for HTTPS
+    // https
+    //   .createServer({ key: privateKey, cert: certificate }, app)
+    //   .listen(process.env.PORT || 3000);
+    app.listen(process.env.PORT || 3000);  
     console.log('Connected!');
   })
   .catch((err) => console.log(err));
