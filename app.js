@@ -18,7 +18,7 @@ const https = require('https');
 
 require('dotenv').config(); // Add this line to load environment variables from .env file
 
-const dbConnectionString = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@udemy-sandbox.rayfqu3.mongodb.net/${process.env.DB_NAME}?w=majority`;
+const dbConnectionString = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@udemy-mern-shop.fpwmhg5.mongodb.net/${process.env.DB_NAME}`;
 
 const adminRoutes = require('./routes/admin');
 const shopRoutes = require('./routes/shop');
@@ -138,7 +138,7 @@ mongoose
     // https
     //   .createServer({ key: privateKey, cert: certificate }, app)
     //   .listen(process.env.PORT || 3000);
-    app.listen(process.env.PORT || 3000);  
+    app.listen(process.env.PORT || 3000);
     console.log('Connected!');
   })
   .catch((err) => console.log(err));
